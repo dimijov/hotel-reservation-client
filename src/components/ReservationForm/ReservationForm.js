@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import './ReservationForm.css';
 import GuestForm from '../GuestForm/GuestForm';
 import { useNavigate } from 'react-router-dom';
+import { handleApiError } from '../../utils/api';
+import ErrorMessage from '../ErrorMessage/ErrorMessage';
 
 const ReservationForm = ({ roomId }) => {
   const [formData, setFormData] = useState({
@@ -31,9 +33,10 @@ const ReservationForm = ({ roomId }) => {
       },
       body: JSON.stringify({ ...formData, soba: { id: roomId } })
     })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(errorData => { throw new Error(errorData.message || 'Došlo je do greške'); });
+      .then(async response => {
+        const errorMessage = await handleApiError(response);
+        if (errorMessage) {
+          throw new Error(errorMessage);
         }
         return response.json();
       })
@@ -61,7 +64,7 @@ const ReservationForm = ({ roomId }) => {
         <input type="text" name="promoKod" value={formData.promoKod} onChange={handleChange} />
       </label>
       <GuestForm gosti={formData.gosti} setGosti={(gosti) => setFormData({ ...formData, gosti })} />
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <ErrorMessage message={error} />}
       <button type="submit">Rezerviši</button>
     </form>
   );

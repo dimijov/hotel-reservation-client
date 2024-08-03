@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ErrorMessage from '../components/ErrorMessage/ErrorMessage';
 import { useNavigate } from 'react-router-dom';
+import { handleApiError } from '../utils/api';
 
 const SearchReservationPage = () => {
   const [email, setEmail] = useState('');
@@ -13,8 +14,11 @@ const SearchReservationPage = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     fetch(`http://localhost:8080/api/rezervacije?email=${email}&token=${token}`)
-      .then(response => {
-        if (!response.ok) throw new Error('Rezervacija nije pronađena');
+      .then(async response => {
+        const errorMessage = await handleApiError(response);
+        if (errorMessage) {
+          throw new Error(errorMessage);
+        }
         return response.json();
       })
       .then(data => {

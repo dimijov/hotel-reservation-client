@@ -9,17 +9,28 @@ import RoomCard from '../components/RoomCard/RoomCard';
 const ReservationAddPage = () => {
   const { roomId } = useParams(); // Uzimanje roomId iz URL-a
   const [room, setRoom] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (roomId) {
       fetch(`http://localhost:8080/api/sobe/${roomId}`)
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Soba nije pronađena'); // Ako status nije OK, baci grešku
+          }
+          return response.json();
+        })
         .then(data => setRoom(data))
-        .catch(error => console.error('Error fetching room details:', error));
+        .catch(error => {
+          console.error('Error fetching room details:', error);
+          setError(error.message); // Postavi grešku u stanje
+        });
     }
   }, [roomId]);
 
-  if (!room) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>; // Prikaži grešku ako postoji
+
+  if (!room) return <p>Loading...</p>; // Prikaži Loading... dok se podaci učitavaju
 
   return (
     <div>
